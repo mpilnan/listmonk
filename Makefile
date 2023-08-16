@@ -2,9 +2,12 @@
 LAST_COMMIT := $(or $(shell git rev-parse --short HEAD 2> /dev/null),$(shell head -n 1 VERSION | grep -oP -m 1 "^[a-z0-9]+$$"),"UNKNOWN")
 
 # Try to get the semver from 1) git 2) the VERSION file 3) fallback.
-VERSION := $(or $(shell git describe --tags --abbrev=0 2> /dev/null),$(shell grep -oP "tag: \K(.*)(?=,)" VERSION),"v0.0.0")
+VERSION := $(or $(shell git describe --tags --abbrev=0 2> /dev/null),$(shell grep -oP "tag: \K(.*)(?=,)" VERSION),"v0.0.0")-tachy
 
 BUILDSTR := ${VERSION} (\#${LAST_COMMIT} $(shell date -u +"%Y-%m-%dT%H:%M:%S%z"))
+
+export LISTMONK_FRONTEND_ROOT = /newsletter/manager/admin
+export VUE_APP_ROOT_URL = /newsletter/manager
 
 YARN ?= yarn
 GOPATH ?= $(HOME)/go
@@ -113,3 +116,13 @@ rm-dev-docker: build ## Delete the docker containers including DB volumes.
 init-dev-docker: build-dev-docker ## Delete the docker containers including DB volumes.
 	cd dev; \
 	docker-compose run --rm backend sh -c "make dist && ./listmonk --install --idempotent --yes --config dev/config.toml"
+
+# Build production Tachyum Docker image
+.PHONY: build-tachy-docker
+build-tachy-docker: dist
+	docker build -t repo.tsk.tachyum.com/web/newsletter-listmonk:latest -t repo.tsk.tachyum.com/web/newsletter-listmonk:${VERSION} .
+
+# Push Tachyum Listmonk Docker images
+.PHONY: push-tachy-docker
+push-tachy-docker: build-tachy-docker
+	docker push repo.tsk.tachyum.com/web/newsletter-listmonk:latest && docker push repo.tsk.tachyum.com/web/newsletter-listmonk:${VERSION}
