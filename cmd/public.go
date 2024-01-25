@@ -30,6 +30,7 @@ type tplRenderer struct {
 	RootURL             string
 	LogoURL             string
 	FaviconURL          string
+	AssetVersion        string
 	EnablePublicSubPage bool
 	EnablePublicArchive bool
 }
@@ -41,6 +42,7 @@ type tplData struct {
 	RootURL             string
 	LogoURL             string
 	FaviconURL          string
+	AssetVersion        string
 	EnablePublicSubPage bool
 	EnablePublicArchive bool
 	Data                interface{}
@@ -94,6 +96,7 @@ func (t *tplRenderer) Render(w io.Writer, name string, data interface{}, c echo.
 		RootURL:             t.RootURL,
 		LogoURL:             t.LogoURL,
 		FaviconURL:          t.FaviconURL,
+		AssetVersion:        t.AssetVersion,
 		EnablePublicSubPage: t.EnablePublicSubPage,
 		EnablePublicArchive: t.EnablePublicArchive,
 		Data:                data,
@@ -140,7 +143,7 @@ func handleViewCampaignMessage(c echo.Context) error {
 	)
 
 	// Get the campaign.
-	camp, err := app.core.GetCampaign(0, campUUID)
+	camp, err := app.core.GetCampaign(0, campUUID, "")
 	if err != nil {
 		if er, ok := err.(*echo.HTTPError); ok {
 			if er.Code == http.StatusBadRequest {
@@ -200,16 +203,6 @@ func handleSubscriptionPage(c echo.Context) error {
 	out.AllowWipe = app.constants.Privacy.AllowWipe
 	out.AllowPreferences = app.constants.Privacy.AllowPreferences
 
-	if app.constants.Privacy.AllowPreferences {
-		out.ShowManage = showManage
-	}
-
-	// Get the subscriber's lists.
-	subs, err := app.core.GetSubscriptions(0, subUUID, false)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, app.i18n.T("public.errorFetchingLists"))
-	}
-
 	s, err := app.core.GetSubscriber(0, subUUID, "")
 	if err != nil {
 		return c.Render(http.StatusInternalServerError, tplMessage,
@@ -222,8 +215,17 @@ func handleSubscriptionPage(c echo.Context) error {
 			makeMsgTpl(app.i18n.T("public.noSubTitle"), "", app.i18n.Ts("public.blocklisted")))
 	}
 
-	// Filter out unrelated private lists.
-	if showManage {
+	// Only show preference management if it's enabled in settings.
+	if app.constants.Privacy.AllowPreferences {
+		out.ShowManage = showManage
+	}
+	if out.ShowManage {
+		// Get the subscriber's lists.
+		subs, err := app.core.GetSubscriptions(0, subUUID, false)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, app.i18n.T("public.errorFetchingLists"))
+		}
+
 		out.Subscriptions = make([]models.Subscription, 0, len(subs))
 		for _, s := range subs {
 			if s.Type == models.ListTypePrivate {
@@ -706,11 +708,12 @@ func processSubForm(c echo.Context) (bool, error) {
 				return false, err
 			}
 
-			if _, err := app.core.UpdateSubscriberWithLists(sub.ID, sub, nil, listUUIDs, false, false); err != nil {
+			_, hasOptin, err := app.core.UpdateSubscriberWithLists(sub.ID, sub, nil, listUUIDs, false, false)
+			if err != nil {
 				return false, err
 			}
 
-			return false, nil
+			return hasOptin, nil
 		}
 
 		return false, echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("%s", err.(*echo.HTTPError).Message))

@@ -2,7 +2,9 @@
   <section class="dashboard content">
     <header class="columns">
       <div class="column is-two-thirds">
-        <h1 class="title is-5">{{ $utils.niceDate(new Date()) }}</h1>
+        <h1 class="title is-5">
+          {{ $utils.niceDate(new Date()) }}
+        </h1>
       </div>
     </header>
 
@@ -26,19 +28,19 @@
                   <div class="column is-6">
                     <ul class="no has-text-grey">
                       <li>
-                        <label>{{ $utils.niceNumber(counts.lists.public) }}</label>
+                        <label for="#">{{ $utils.niceNumber(counts.lists.public) }}</label>
                         {{ $t('lists.types.public') }}
                       </li>
                       <li>
-                        <label>{{ $utils.niceNumber(counts.lists.private) }}</label>
+                        <label for="#">{{ $utils.niceNumber(counts.lists.private) }}</label>
                         {{ $t('lists.types.private') }}
                       </li>
                       <li>
-                        <label>{{ $utils.niceNumber(counts.lists.optinSingle) }}</label>
+                        <label for="#">{{ $utils.niceNumber(counts.lists.optinSingle) }}</label>
                         {{ $t('lists.optins.single') }}
                       </li>
                       <li>
-                        <label>{{ $utils.niceNumber(counts.lists.optinDouble) }}</label>
+                        <label for="#">{{ $utils.niceNumber(counts.lists.optinDouble) }}</label>
                         {{ $t('lists.optins.double') }}
                       </li>
                     </ul>
@@ -60,7 +62,7 @@
                   <div class="column is-6">
                     <ul class="no has-text-grey">
                       <li v-for="(num, status) in counts.campaigns.byStatus" :key="status">
-                        <label :data-cy="`campaigns-${status}`">{{ num }}</label>
+                        <label for="#" :data-cy="`campaigns-${status}`">{{ num }}</label>
                         {{ $t(`campaigns.status.${status}`) }}
                         <span v-if="status === 'running'" class="spinner is-tiny">
                           <b-loading :is-full-page="false" active />
@@ -89,11 +91,11 @@
                   <div class="column is-6">
                     <ul class="no has-text-grey">
                       <li>
-                        <label>{{ $utils.niceNumber(counts.subscribers.blocklisted) }}</label>
+                        <label for="#">{{ $utils.niceNumber(counts.subscribers.blocklisted) }}</label>
                         {{ $t('subscribers.status.blocklisted') }}
                       </li>
                       <li>
-                        <label>{{ $utils.niceNumber(counts.subscribers.orphans) }}</label>
+                        <label for="#">{{ $utils.niceNumber(counts.subscribers.orphans) }}</label>
                         {{ $t('dashboard.orphanSubs') }}
                       </li>
                     </ul>
@@ -119,14 +121,180 @@
             <article class="tile is-child notification charts">
               <div class="columns">
                 <div class="column is-6">
-                  <h3 class="title is-size-6">{{ $t('dashboard.campaignViews') }}</h3><br />
-                  <div ref="chart-views"></div>
+                  <h3 class="title is-size-6">
+                    {{ $t('dashboard.campaignViews') }}
+                  </h3><br />
+                  <chart type="line" v-if="campaignViews" :data="campaignViews" />
                 </div>
                 <div class="column is-6">
                   <h3 class="title is-size-6 has-text-right">
                     {{ $t('dashboard.linkClicks') }}
                   </h3><br />
-                  <div ref="chart-clicks"></div>
+                  <chart type="line" v-if="campaignClicks" :data="campaignClicks" />
+                </div>
+              </div>
+              <div class="columns">
+                <div class="column">
+                  <div class="columns is-vcentered">
+                    <div class="column">
+                      <h3 class="title is-size-6">
+                        {{ $t('dashboard.subscribersCount') }}
+                      </h3>
+                    </div>
+                    <div class="column is-vcentered has-text-right">
+                      <b-dropdown
+                        aria-role="list"
+                        class="has-text-left"
+                        v-model="currentLists.subscribers"
+                        @change="getSubscriberCountByList"
+                        >
+                        <template #trigger="{ active }">
+                          <b-button
+                            :label="currentLists.subscribers.name"
+                            :icon-right="active ? 'menu-up' : 'menu-down'" />
+                        </template>
+
+                        <template>
+                          <b-dropdown-item
+                            v-for="list in this.lists"
+                            :key="list.id"
+                            :value="list"
+                            aria-role="listitem"
+                          >
+                            {{ list.name }}
+                          </b-dropdown-item>
+                        </template>
+                      </b-dropdown>
+                    </div>
+                  </div>
+                  <div ref="chart-subscribers"></div>
+                  <template>
+                  <div>
+                    <b-field label="Select time window (months back)">
+                      <div class="columns">
+                        <b-field grouped class="column is-vcentered is-2 no-padding">
+                          <b-numberinput
+                            v-model="subscribersMonthsWindow"
+                            @input="getSubscriberCountByMonths"
+                            min="1"
+                            controls-position="compact"
+                            controls-alignment="left"
+                            editable="false"
+                            style="width: 100%"
+                          >
+                          </b-numberinput>
+                        </b-field>
+                      </div>
+                    </b-field>
+                  </div>
+                  </template>
+                </div>
+              </div>
+            </article>
+          </div>
+          <div class="tile is-parent relative">
+            <b-loading v-if="isChartsLoading" active :is-full-page="false" />
+            <article class="tile is-child notification charts">
+              <div class="columns">
+                <div class="column">
+                  <div class="columns is-vcentered">
+                    <div class="column">
+                      <h3 class="title is-size-6">
+                        {{ $t('dashboard.subscriberDomains') }}
+                      </h3>
+                    </div>
+                    <div class="column has-text-right">
+                      <b-dropdown
+                        aria-role="list"
+                        class="has-text-left"
+                        v-model="currentLists.domains"
+                        @change="getDomainStats"
+                        >
+                        <template #trigger="{ active }">
+                          <b-button
+                            :label="currentLists.domains.name"
+                            :icon-right="active ? 'menu-up' : 'menu-down'" />
+                        </template>
+
+                        <b-dropdown-item
+                            :value="{ id: undefined, name: $t('dashboard.domains.all') }"
+                            aria-role="listitem"
+                          >
+                            {{ $t('dashboard.domains.all') }}
+                        </b-dropdown-item>
+
+                        <template>
+                          <b-dropdown-item
+                            v-for="list in this.lists"
+                            :key="list.id"
+                            :value="list"
+                            aria-role="listitem"
+                          >
+                            {{ list.name }}
+                          </b-dropdown-item>
+                        </template>
+                      </b-dropdown>
+                    </div>
+                  </div>
+                  <div class="columns">
+                    <div class="column">
+                      <div ref="chart-domains"></div>
+                    </div>
+                    <div class="column is-8">
+                      <div class="legend-container"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="columns">
+                <div class="column">
+                  <div class="columns is-vcentered">
+                    <div class="column">
+                      <h3 class="title is-size-6">
+                        {{ $t('dashboard.subscriberCountries') }}
+                      </h3>
+                    </div>
+                    <div class="column has-text-right">
+                      <b-dropdown
+                        aria-role="list"
+                        class="has-text-left"
+                        v-model="currentLists.countries"
+                        @change="getCountryStats"
+                        >
+                        <template #trigger="{ active }">
+                          <b-button
+                            :label="currentLists.countries.name"
+                            :icon-right="active ? 'menu-up' : 'menu-down'" />
+                        </template>
+
+                        <b-dropdown-item
+                            :value="{ id: undefined, name: $t('dashboard.countries.all') }"
+                            aria-role="listitem"
+                          >
+                            {{ $t('dashboard.countries.all') }}
+                        </b-dropdown-item>
+
+                        <template>
+                          <b-dropdown-item
+                            v-for="list in this.lists"
+                            :key="list.id"
+                            :value="list"
+                            aria-role="listitem"
+                          >
+                            {{ list.name }}
+                          </b-dropdown-item>
+                        </template>
+                      </b-dropdown>
+                    </div>
+                  </div>
+                  <div class="columns">
+                    <div class="column">
+                      <div ref="chart-countries"></div>
+                    </div>
+                    <div class="column is-8">
+                      <div class="legend-countries"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="columns">
@@ -337,18 +505,23 @@
 </style>
 
 <script>
-import Vue from 'vue';
-import c3 from 'c3';
 import * as d3 from 'd3';
 import dayjs from 'dayjs';
+import Vue from 'vue';
 import { colors, countryCodes } from '../constants';
+import Chart from '../components/Chart.vue';
 
 export default Vue.extend({
+  components: {
+    Chart,
+  },
+
   data() {
     return {
       isChartsLoading: true,
       isCountsLoading: true,
-
+      campaignViews: null,
+      campaignClicks: null,
       counts: {
         lists: {},
         subscribers: {},
@@ -375,41 +548,22 @@ export default Vue.extend({
   },
 
   methods: {
-    renderChart(label, data, el) {
-      const conf = {
-        bindto: el,
-        unload: true,
-        data: {
-          type: 'spline',
-          columns: [],
-          color() {
-            return colors.primary;
-          },
-          empty: { label: { text: this.$t('globals.messages.emptyState') } },
-        },
-        axis: {
-          x: {
-            type: 'category',
-            categories: data.map((d) => dayjs(d.date).format('DD MMM')),
-            tick: {
-              rotate: -45,
-              multiline: false,
-              culling: { max: 10 },
-            },
-          },
-        },
-        legend: {
-          show: false,
-        },
-      };
-
-      if (data.length > 0) {
-        conf.data.columns.push([label, ...data.map((d) => d.count)]);
+    makeChart(data) {
+      if (data.length === 0) {
+        return {};
       }
-
-      this.$nextTick(() => {
-        c3.generate(conf);
-      });
+      return {
+        labels: data.map((d) => dayjs(d.date).format('DD MMM')),
+        datasets: [
+          {
+            data: [...data.map((d) => d.count)],
+            borderColor: colors.primary,
+            borderWidth: 2,
+            pointHoverBorderWidth: 5,
+            pointBorderWidth: 0.5,
+          },
+        ],
+      };
     },
 
     renderTimeseriesChart(label, data, el) {
