@@ -193,7 +193,6 @@
                 {{ $t('campaigns.removeAltText') }}
               </a>
             </span>
-            </a>
           </div>
         </div>
 
