@@ -108,19 +108,25 @@ export const getDashboardCounts = () => http.get(
   { loading: models.dashboard },
 );
 
-export const getDashboardSubscriberCounts = (id, months) => http.get(`/api/dashboard/counts/subscribers/${id}`,
+export const getDashboardSubscriberCounts = (id, months) => http.get(
+  `/api/dashboard/counts/subscribers/${id}`,
   {
     loading: models.dashboard,
     params: {
       months,
     },
-  });
+  },
+);
 
-export const getDashboardDomainStats = (id) => http.get(id ? `/api/dashboard/domains/${id}` : '/api/dashboard/domains',
-  { loading: models.dashboard });
+export const getDashboardDomainStats = (id) => http.get(
+  id ? `/api/dashboard/domains/${id}` : '/api/dashboard/domains',
+  { loading: models.dashboard },
+);
 
-export const getDashboardCountryStats = (id) => http.get(id ? `/api/dashboard/countries/${id}` : '/api/dashboard/countries',
-  { loading: models.dashboard });
+export const getDashboardCountryStats = (id) => http.get(
+  id ? `/api/dashboard/countries/${id}` : '/api/dashboard/countries',
+  { loading: models.dashboard },
+);
 
 export const getDashboardCharts = () => http.get(
   '/api/dashboard/charts',

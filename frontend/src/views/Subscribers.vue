@@ -166,7 +166,7 @@
 
       <b-table-column v-slot="props" field="created_at" :label="$t('globals.fields.createdAt')"
         header-class="cy-created_at" sortable>
-        {{ $utils.niceDate(props.row.attribs['subscription_date'] || props.row.createdAt ) }}
+        {{ $utils.niceDate(props.row.attribs['subscription_date'] || props.row.createdAt) }}
       </b-table-column>
 
       <b-table-column v-slot="props" field="updated_at" :label="$t('globals.fields.updatedAt')"

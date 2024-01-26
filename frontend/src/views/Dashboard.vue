@@ -143,7 +143,6 @@
                     </div>
                     <div class="column is-vcentered has-text-right">
                       <b-dropdown
-                        aria-role="list"
                         class="has-text-left"
                         v-model="currentLists.subscribers"
                         @change="getSubscriberCountByList"
@@ -159,7 +158,6 @@
                             v-for="list in this.lists"
                             :key="list.id"
                             :value="list"
-                            aria-role="listitem"
                           >
                             {{ list.name }}
                           </b-dropdown-item>
@@ -167,7 +165,7 @@
                       </b-dropdown>
                     </div>
                   </div>
-                  <div ref="chart-subscribers"></div>
+                  <chart type="line" v-if="subscriberCounts" :data="subscriberCounts" />
                   <template>
                   <div>
                     <b-field label="Select time window (months back)">
@@ -179,10 +177,9 @@
                             min="1"
                             controls-position="compact"
                             controls-alignment="left"
-                            editable="false"
+                            :editable="false"
                             style="width: 100%"
-                          >
-                          </b-numberinput>
+                          />
                         </b-field>
                       </div>
                     </b-field>
@@ -192,6 +189,7 @@
               </div>
             </article>
           </div>
+
           <div class="tile is-parent relative">
             <b-loading v-if="isChartsLoading" active :is-full-page="false" />
             <article class="tile is-child notification charts">
@@ -205,7 +203,6 @@
                     </div>
                     <div class="column has-text-right">
                       <b-dropdown
-                        aria-role="list"
                         class="has-text-left"
                         v-model="currentLists.domains"
                         @change="getDomainStats"
@@ -218,7 +215,6 @@
 
                         <b-dropdown-item
                             :value="{ id: undefined, name: $t('dashboard.domains.all') }"
-                            aria-role="listitem"
                           >
                             {{ $t('dashboard.domains.all') }}
                         </b-dropdown-item>
@@ -228,7 +224,6 @@
                             v-for="list in this.lists"
                             :key="list.id"
                             :value="list"
-                            aria-role="listitem"
                           >
                             {{ list.name }}
                           </b-dropdown-item>
@@ -236,12 +231,12 @@
                       </b-dropdown>
                     </div>
                   </div>
-                  <div class="columns">
+                  <div class="columns pie">
                     <div class="column">
-                      <div ref="chart-domains"></div>
+                      <chart type="pie" v-if="domains" :data="domains" legend-container="legend-domains" />
                     </div>
-                    <div class="column is-8">
-                      <div class="legend-container"></div>
+                    <div class="column w-1/2">
+                      <div class="legend" id="legend-domains" />
                     </div>
                   </div>
                 </div>
@@ -256,7 +251,6 @@
                     </div>
                     <div class="column has-text-right">
                       <b-dropdown
-                        aria-role="list"
                         class="has-text-left"
                         v-model="currentLists.countries"
                         @change="getCountryStats"
@@ -269,7 +263,6 @@
 
                         <b-dropdown-item
                             :value="{ id: undefined, name: $t('dashboard.countries.all') }"
-                            aria-role="listitem"
                           >
                             {{ $t('dashboard.countries.all') }}
                         </b-dropdown-item>
@@ -279,7 +272,6 @@
                             v-for="list in this.lists"
                             :key="list.id"
                             :value="list"
-                            aria-role="listitem"
                           >
                             {{ list.name }}
                           </b-dropdown-item>
@@ -287,176 +279,12 @@
                       </b-dropdown>
                     </div>
                   </div>
-                  <div class="columns">
+                  <div class="columns pie">
                     <div class="column">
-                      <div ref="chart-countries"></div>
+                      <chart type="pie" v-if="countries" :data="countries" legend-container="legend-countries" />
                     </div>
-                    <div class="column is-8">
-                      <div class="legend-countries"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="columns">
-                <div class="column">
-                  <div class="columns is-vcentered">
                     <div class="column">
-                      <h3 class="title is-size-6">
-                        {{ $t('dashboard.subscribersCount') }}
-                      </h3>
-                    </div>
-                    <div class="column is-vcentered has-text-right">
-                      <b-dropdown
-                        aria-role="list"
-                        class="has-text-left"
-                        v-model="currentLists.subscribers"
-                        @change="getSubscriberCountByList"
-                        >
-                        <template #trigger="{ active }">
-                          <b-button
-                            :label="currentLists.subscribers.name"
-                            :icon-right="active ? 'menu-up' : 'menu-down'" />
-                        </template>
-
-                        <template>
-                          <b-dropdown-item
-                            v-for="list in this.lists"
-                            :key="list.id"
-                            :value="list"
-                            aria-role="listitem"
-                          >
-                            {{ list.name }}
-                          </b-dropdown-item>
-                        </template>
-                      </b-dropdown>
-                    </div>
-                  </div>
-                  <div ref="chart-subscribers"></div>
-                  <template>
-                  <div>
-                    <b-field label="Select time window (months back)">
-                      <div class="columns">
-                        <b-field grouped class="column is-vcentered is-2 no-padding">
-                          <b-numberinput
-                            v-model="subscribersMonthsWindow"
-                            @input="getSubscriberCountByMonths"
-                            min="1"
-                            controls-position="compact"
-                            controls-alignment="left"
-                            editable="false"
-                            style="width: 100%"
-                          >
-                          </b-numberinput>
-                        </b-field>
-                      </div>
-                    </b-field>
-                  </div>
-                  </template>
-                </div>
-              </div>
-            </article>
-          </div>
-          <div class="tile is-parent relative">
-            <b-loading v-if="isChartsLoading" active :is-full-page="false" />
-            <article class="tile is-child notification charts">
-              <div class="columns">
-                <div class="column">
-                  <div class="columns is-vcentered">
-                    <div class="column">
-                      <h3 class="title is-size-6">
-                        {{ $t('dashboard.subscriberDomains') }}
-                      </h3>
-                    </div>
-                    <div class="column has-text-right">
-                      <b-dropdown
-                        aria-role="list"
-                        class="has-text-left"
-                        v-model="currentLists.domains"
-                        @change="getDomainStats"
-                        >
-                        <template #trigger="{ active }">
-                          <b-button
-                            :label="currentLists.domains.name"
-                            :icon-right="active ? 'menu-up' : 'menu-down'" />
-                        </template>
-
-                        <b-dropdown-item
-                            :value="{ id: undefined, name: $t('dashboard.domains.all') }"
-                            aria-role="listitem"
-                          >
-                            {{ $t('dashboard.domains.all') }}
-                        </b-dropdown-item>
-
-                        <template>
-                          <b-dropdown-item
-                            v-for="list in this.lists"
-                            :key="list.id"
-                            :value="list"
-                            aria-role="listitem"
-                          >
-                            {{ list.name }}
-                          </b-dropdown-item>
-                        </template>
-                      </b-dropdown>
-                    </div>
-                  </div>
-                  <div class="columns">
-                    <div class="column">
-                      <div ref="chart-domains"></div>
-                    </div>
-                    <div class="column is-8">
-                      <div class="legend-container"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="columns">
-                <div class="column">
-                  <div class="columns is-vcentered">
-                    <div class="column">
-                      <h3 class="title is-size-6">
-                        {{ $t('dashboard.subscriberCountries') }}
-                      </h3>
-                    </div>
-                    <div class="column has-text-right">
-                      <b-dropdown
-                        aria-role="list"
-                        class="has-text-left"
-                        v-model="currentLists.countries"
-                        @change="getCountryStats"
-                        >
-                        <template #trigger="{ active }">
-                          <b-button
-                            :label="currentLists.countries.name"
-                            :icon-right="active ? 'menu-up' : 'menu-down'" />
-                        </template>
-
-                        <b-dropdown-item
-                            :value="{ id: undefined, name: $t('dashboard.countries.all') }"
-                            aria-role="listitem"
-                          >
-                            {{ $t('dashboard.countries.all') }}
-                        </b-dropdown-item>
-
-                        <template>
-                          <b-dropdown-item
-                            v-for="list in this.lists"
-                            :key="list.id"
-                            :value="list"
-                            aria-role="listitem"
-                          >
-                            {{ list.name }}
-                          </b-dropdown-item>
-                        </template>
-                      </b-dropdown>
-                    </div>
-                  </div>
-                  <div class="columns">
-                    <div class="column">
-                      <div ref="chart-countries"></div>
-                    </div>
-                    <div class="column is-8">
-                      <div class="legend-countries"></div>
+                      <div class="legend" id="legend-countries" />
                     </div>
                   </div>
                 </div>
@@ -469,43 +297,23 @@
   </section>
 </template>
 
-<style lang="css">
-  @import "~c3/c3.css";
-  .legend span {
-    display: inline-block;
-    margin-left: 7px;
-    margin-right: 7px;
-    padding: 5px;
-  }
+<style>
+.columns.pie {
+  max-height: 35rem;
+}
 
-  .legend .hidden {
-    color: rgb(161, 161, 161);
-  }
+.columns.pie .legend {
+  height: 100%;
+}
 
-  .legend .hidden span {
-    visibility: hidden;
-  }
-
-  .legend {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    overflow: auto;
-    height: 320px;
-    cursor: pointer;
-  }
-
-  .legend:hover > div {
-    opacity: 50%;
-  }
-
-  .legend:hover > div:hover {
-    opacity: 100%;
-  }
+.columns.pie .legend ul {
+  flex-wrap: wrap;
+  height: 100%;
+  overflow-y: scroll;
+}
 </style>
 
 <script>
-import * as d3 from 'd3';
 import dayjs from 'dayjs';
 import Vue from 'vue';
 import { colors, countryCodes } from '../constants';
@@ -522,6 +330,9 @@ export default Vue.extend({
       isCountsLoading: true,
       campaignViews: null,
       campaignClicks: null,
+      subscriberCounts: null,
+      domains: null,
+      countries: null,
       counts: {
         lists: {},
         subscribers: {},
@@ -566,98 +377,23 @@ export default Vue.extend({
       };
     },
 
-    renderTimeseriesChart(label, data, el) {
-      const dates = ['x'];
-      const counts = [label];
-
-      dates.push(...data.map((d) => d.date));
-      counts.push(...data.map((d) => d.count));
-
-      const conf = {
-        bindto: el,
-        unload: true,
-        data: {
-          x: 'x',
-          columns: [
-            dates,
-            counts,
-          ],
-          color() {
-            return colors.primary;
+    makePieChart(data) {
+      if (data.length === 0) {
+        return {};
+      }
+      return {
+        labels: data.map((d) => d.label),
+        datasets: [
+          {
+            data: [...data.map((d) => d.count)],
           },
-          empty: { label: { text: this.$t('globals.messages.emptyState') } },
-        },
-        axis: {
-          x: {
-            type: 'timeseries',
-            tick: {
-              format: ((d) => dayjs(d).format('DD MMM')),
-              rotate: -45,
-              multiline: false,
-              culling: { max: 20 },
-            },
-          },
-        },
-        legend: {
-          show: false,
-        },
+        ],
       };
-
-      this.$nextTick(() => {
-        c3.generate(conf);
-      });
-    },
-
-    renderPieChart(data, el, legendSelector = '.legend-container') {
-      const conf = {
-        bindto: el,
-        unload: true,
-        data: {
-          type: 'pie',
-          labels: 'true',
-          columns: [...data.map((d) => [d.label, d.count])],
-          empty: { label: { text: this.$t('globals.messages.emptyState') } },
-        },
-        tooltip: {
-          format: {
-            value: (value) => `${value} subscribers`,
-          },
-        },
-        legend: {
-          show: false,
-        },
-      };
-
-      this.$nextTick(() => {
-        const chart = c3.generate(conf);
-
-        d3.select(legendSelector)
-          .html('')
-          .insert('div', '.chart')
-          .attr('class', 'legend')
-          .selectAll('div')
-          .data([...data.sort((a, b) => b.count - a.count).map((d) => d.label)])
-          .enter()
-          .append('div')
-          .attr('data-id', (id) => id)
-          .attr('class', 'is-size-6')
-          .html((id) => `<span style="background-color: ${chart.color(id)}"></span> ${id}`)
-          .on('mouseover', (event) => {
-            chart.focus(event.target.dataset.id);
-          })
-          .on('mouseout', () => {
-            chart.revert();
-          })
-          .on('click', (event) => {
-            event.target.classList.toggle('hidden');
-            chart.toggle(event.target.dataset.id);
-          });
-      });
     },
 
     getSubscriberCount(list, months) {
       this.$api.getDashboardSubscriberCounts(list.id, months).then((data) => {
-        this.renderTimeseriesChart(this.$t('dashboard.subscribersCount'), data, this.$refs['chart-subscribers']);
+        this.subscriberCounts = this.makeChart(data);
       });
     },
 
@@ -671,13 +407,13 @@ export default Vue.extend({
 
     getDomainStats(list) {
       this.$api.getDashboardDomainStats(list ? list.id : null).then((data) => {
-        this.renderPieChart(data.map((d) => ({ label: d.domain, count: d.count })), this.$refs['chart-domains']);
+        this.domains = this.makePieChart(data.map((d) => ({ label: d.domain, count: d.count })));
       });
     },
 
     getCountryStats(list) {
       this.$api.getDashboardCountryStats(list ? list.id : null).then((data) => {
-        this.renderPieChart(data.map((d) => ({ label: d.country ? (countryCodes[d.country] || d.country) : 'Missing', count: d.count })), this.$refs['chart-countries'], '.legend-countries');
+        this.countries = this.makePieChart(data.map((d) => ({ label: d.country ? (countryCodes[d.country] || d.country) : 'Missing', count: d.count })));
       });
     },
   },
@@ -698,8 +434,8 @@ export default Vue.extend({
     // Pull the charts.
     this.$api.getDashboardCharts().then((data) => {
       this.isChartsLoading = false;
-      this.renderChart(this.$t('dashboard.campaignViews'), data.campaignViews, this.$refs['chart-views']);
-      this.renderChart(this.$t('dashboard.linkClicks'), data.linkClicks, this.$refs['chart-clicks']);
+      this.campaignViews = this.makeChart(data.campaignViews);
+      this.campaignClicks = this.makeChart(data.linkClicks);
     });
 
     this.$api.getLists({ minimal: true, per_page: 'all' }).then((data) => {
@@ -713,5 +449,6 @@ export default Vue.extend({
     this.getDomainStats();
     this.getCountryStats();
   },
+
 });
 </script>
