@@ -7,7 +7,7 @@ VERSION := $(or $(LISTMONK_VERSION),$(shell git describe --tags --abbrev=0 2> /d
 BUILDSTR := ${VERSION} (\#${LAST_COMMIT} $(shell date -u +"%Y-%m-%dT%H:%M:%S%z"))
 
 export LISTMONK_FRONTEND_ROOT = /newsletter/manager/admin
-export VUE_APP_ROOT_URL = /newsletter/manager
+export VITE_APP_ROOT_URL = /newsletter/manager
 
 YARN ?= yarn
 GOPATH ?= $(HOME)/go

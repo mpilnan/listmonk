@@ -8,7 +8,7 @@ export default defineConfig(({ _, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [vue()],
-    base: '/admin',
+    base: env.LISTMONK_FRONTEND_ROOT || '/admin',
     mode,
     resolve: {
       alias: {
