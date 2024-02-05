@@ -7,7 +7,7 @@ VERSION := $(or $(LISTMONK_VERSION),$(shell git describe --tags --abbrev=0 2> /d
 BUILDSTR := ${VERSION} (\#${LAST_COMMIT} $(shell date -u +"%Y-%m-%dT%H:%M:%S%z"))
 
 export LISTMONK_FRONTEND_ROOT = /newsletter/manager/admin
-export VUE_APP_ROOT_URL = /newsletter/manager
+export VITE_APP_ROOT_URL = /newsletter/manager
 
 YARN ?= yarn
 GOPATH ?= $(HOME)/go
@@ -41,7 +41,7 @@ $(FRONTEND_YARN_MODULES): frontend/package.json frontend/yarn.lock
 	touch -c $(FRONTEND_YARN_MODULES)
 
 # Build the backend to ./listmonk.
-$(BIN): $(shell find . -type f -name "*.go")
+$(BIN): $(shell find . -type f -name "*.go") go.mod go.sum
 	CGO_ENABLED=0 go build -o ${BIN} -ldflags="-s -w -X 'main.buildString=${BUILDSTR}' -X 'main.versionString=${VERSION}'" cmd/*.go
 
 # Run the backend in dev mode. The frontend assets in dev mode are loaded from disk from frontend/dist.

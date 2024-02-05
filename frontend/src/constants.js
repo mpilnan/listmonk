@@ -14,7 +14,7 @@ export const models = Object.freeze({
 });
 
 // Ad-hoc URIs that are used outside of vuex requests.
-const rootURL = import.meta.env.VUE_APP_ROOT_URL || '/';
+const rootURL = import.meta.env.VITE_APP_ROOT_URL || '/';
 const baseURL = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 export const uris = Object.freeze({

@@ -6,7 +6,7 @@ import { models } from '../constants';
 import Utils from '../utils';
 
 const http = axios.create({
-  baseURL: import.meta.env.VUE_APP_ROOT_URL || '/',
+  baseURL: import.meta.env.VITE_APP_ROOT_URL || '/',
   withCredentials: false,
   responseType: 'json',
 
