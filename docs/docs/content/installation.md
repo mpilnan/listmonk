@@ -5,7 +5,7 @@ listmonk requires Postgres ⩾ 12.
 See the "[Tutorials](#tutorials)" section at the bottom for detailed guides. 
 
 ## Binary
-- Download the [latest release](https://github.com/knadh/listmonk/releases) and extract the listmonk binary.
+- Download the [latest release](https://github.com/knadh/listmonk/releases) and extract the listmonk binary. `amd64` is the main one. It works for Intel and x86 CPUs.
 - `./listmonk --new-config` to generate config.toml. Then, edit the file.
 - `./listmonk --install` to install the tables in the Postgres DB.
 - Run `./listmonk` and visit `http://localhost:9000`.
@@ -26,7 +26,7 @@ Use the sample [docker-compose.yml](https://github.com/knadh/listmonk/blob/maste
 
 ```bash
 mkdir listmonk-demo && cd listmonk-demo
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/knadh/listmonk/master/install-demo.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/knadh/listmonk/master/install-demo.sh)"
 ```
 
 #### Manual Docker install
@@ -47,7 +47,7 @@ This setup is recommended if you want to _quickly_ setup `listmonk` in productio
 
 ```bash
 mkdir listmonk && cd listmonk
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/knadh/listmonk/master/install-prod.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/knadh/listmonk/master/install-prod.sh)"
 ```
 
 The above shell script performs the following actions:
@@ -143,6 +143,24 @@ To compile the latest unreleased version (`master` branch):
 
 The `master` branch with bleeding edge changes is periodically built and published as `listmonk/listmonk:rc` on DockerHub. To run the latest pre-release version, replace all instances of `listmonk/listmonk:latest` with `listmonk/listmonk:rc` in the docker-compose.yml file and follow the Docker installation steps above. While it is generally safe to run release candidate versions, they may have issues that only get resolved in a general release.
 
+## Helm chart for kubernetes
+
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 3.0.0](https://img.shields.io/badge/AppVersion-3.0.0-informational?style=flat-square)
+
+A helm chart for easily installing listmonk on a kubernetes cluster is made available by community [here](https://github.com/th0th/helm-charts/tree/main/charts/listmonk).
+
+In order to use the helm chart, you can configure `values.yaml` according to your needs, and then run the following command:
+
+```shell
+$ helm upgrade \
+    --create-namespace \
+    --install listmonk listmonk \
+    --namespace listmonk \
+    --repo https://th0th.github.io/helm-charts \
+    --values values.yaml \
+    --version 0.1.0
+```
+
 ## 3rd party hosting
 
 <a href="https://dash.elest.io/deploy?soft=Listmonk&id=237"><img height=33 src=https://github.com/elestio-examples/wordpress/raw/main/deploy-on-elestio.png alt="Deploy on Elestio" style="max-width: 150px;"></a>
@@ -152,6 +170,8 @@ The `master` branch with bleeding edge changes is periodically built and publish
 <a href="https://railway.app/new/template/listmonk"><img src="https://railway.app/button.svg" alt="One-click deploy on Railway" style="max-width: 150px;" /></a>
 <br />
 <a href="https://repocloud.io/details/?app_id=217"><img src="https://d16t0pc4846x52.cloudfront.net/deploy.png" alt="Deploy at RepoCloud" style="max-width: 150px;"/></a>
+<br />
+<a href="https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dlistmonk"><img src="https://cdn.jsdelivr.net/gh/labring-actions/templates@main/Deploy-on-Sealos.svg" alt="Deploy on Sealos" style="max-width: 150px;"/></a>
 
 ## Tutorials
 
