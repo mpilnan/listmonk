@@ -6,7 +6,9 @@ One or more TOML files can be read by passing `--config config.toml` multiple ti
 To generate a new sample configuration file, run `--listmonk --new-config`
 
 ### Environment variables
-Variables in config.toml can also be provided as environment variables prefixed by `LISTMONK_` with periods replaced by `__` (double underscore). Example:
+Variables in config.toml can also be provided as environment variables prefixed by `LISTMONK_` with periods replaced by `__` (double underscore). To start listmonk purely with environment variables without a configuration file, set the environment variables and pass the config flag as `--config=""`.
+
+Example:
 
 | **Environment variable**       | Example value  |
 | ------------------------------ | -------------- |
@@ -46,6 +48,7 @@ When configuring auth proxies and web application firewalls, use this table.
 | `GET`       | `/campaign/*`         | Pixel tracking image                          |
 | `GET`       | `/public/*`           | Static files for HTML subscription pages      |
 | `POST`      | `/webhooks/service/*` | Bounce webhook endpoints for AWS and Sendgrid |
+| `GET`       | `/uploads/*`          | The file upload path configured in media settings |
 
 
 ## Media uploads
@@ -124,7 +127,6 @@ Settings -> Logs in admin shows the last 1000 lines of the standard log output b
 For the [service file](https://github.com/knadh/listmonk/blob/master/listmonk%40.service), you can use `ExecStart=/bin/bash -ce "exec /usr/bin/listmonk --config /etc/listmonk/config.toml --static-dir /etc/listmonk/static >>/etc/listmonk/listmonk.log 2>&1"` to create a log file that persists after restarts. [More info](https://github.com/knadh/listmonk/issues/1462#issuecomment-1868501606).
 
 
-
 ## Time zone
 
 To change listmonk's time zone (logs, etc.) edit `docker-compose.yml`:
@@ -133,4 +135,7 @@ environment:
     - TZ=Etc/UTC
 ```
 with any Timezone listed [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). Then run `sudo docker-compose stop ; sudo docker-compose up` after making changes.
+
+## SMTP Blocked Ports
+Some server hosts block SMTP ports (25, 465) so you have to get request to unblock them i.e. [Hetzner](https://docs.hetzner.com/cloud/servers/faq/#why-can-i-not-send-any-mails-from-my-server).
 
